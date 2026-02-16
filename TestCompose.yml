@@ -1,0 +1,22 @@
+services:
+    gateway1:
+        image: inductiveautomation/ignition:8.3
+        ports:
+            - 9088:8088
+        volumes:
+            - Ign1Data:/usr/local/bin/ignition/data
+        command:
+            -n Ign1-Sequoia
+            -m 2048
+    gateway2:
+        image: inductiveautomation/ignition:8.3
+        ports:
+            - 9089:8088
+        volumes:
+            - Ign2Data:/usr/local/bin/ignition/data
+        command:
+            -n Ign2-Sequoia
+            -m 2048
+volumes:
+    Ign1Data:
+    Ign2Data:
