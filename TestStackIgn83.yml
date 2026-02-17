@@ -2,6 +2,7 @@ name: TestStackIgn83
 services:
     IgnFeCont:
         image: inductiveautomation/ignition:8.3
+        container_name: IgnFeCont
         hostname: IgnFeHost
         ports:
             - 9088:8088
@@ -13,11 +14,12 @@ services:
             - IGNITION_EDITION=standard
             - GATEWAY_ADMIN_PASSWORD=password
             - ACCEPT_IGNITION_EULA=Y
-        command:
+        command: >
             -n IgnFeGateway
             -m 2048
     IgnBeCont:
         image: inductiveautomation/ignition:8.3
+        container_name: IgnBeCont
         hostname: IgnBeHost
         ports:
             - 9089:8088
@@ -30,12 +32,17 @@ services:
             - IGNITION_EDITION=standard
             - GATEWAY_ADMIN_PASSWORD=password
             - ACCEPT_IGNITION_EULA=Y
-        command:
+        command: >
             -n IgnBeGateway
             -m 2048
 volumes:
     IgnFeVol:
+        name: IgnFeVol
     IgnBeVol:
+        name: IgnBeVol
 networks:
     IgnFeNet:
+        driver: bridge
+        name: IgnFeNet
     IgnBeNet:
+        name: IgnBeNet
