@@ -1,6 +1,7 @@
 # You can give the stack a name but it wont use the capitalization.  grrfuck
 name: TestStackIgn83
 services:
+    # Ignition FE gateway
     IgnFeCont:
         image: inductiveautomation/ignition:8.3
         container_name: IgnFeCont
@@ -8,7 +9,14 @@ services:
         ports:
             - 9088:8088
         volumes:
+            # Volume for Ign data
             - IgnFeVol:/usr/local/bin/ignition/data
+            # Bind mount for backup file
+            - /home/jonqnash/Ignition/IgnFeGateway.gwbk:/restore.gwbk
+            # Bind mount for uuid file
+            - /home/jonqnash/Ignition/IgnFe_uuid.txt:/usr/local/bin/ignition/data/config/local/ignition/gateway-network/uuid.txt
+            # Bind mount for metro-keystore file
+            - /home/jonqnash/Ignition/IgnFe_metro-keystore.pfx:/usr/local/bin/ignition/data/config/local/ignition/gateway-network/keystore/metro-keystore.pfx
         networks:
             - IgnFeNet
         environment:
@@ -18,6 +26,8 @@ services:
         command: >
             -n IgnFeGateway
             -m 2048
+            -r /restore.gwbk
+    # Ignition BE gateway
     IgnBeCont:
         image: inductiveautomation/ignition:8.3
         container_name: IgnBeCont
@@ -25,7 +35,14 @@ services:
         ports:
             - 9089:8088
         volumes:
+            # Volume for Ign data
             - IgnBeVol:/usr/local/bin/ignition/data
+            # Bind mount for backup file
+            - /home/jonqnash/Ignition/IgnBeGateway.gwbk:/restore.gwbk
+            # Bind mount for uuid file
+            - /home/jonqnash/Ignition/IgnBe_uuid.txt:/usr/local/bin/ignition/data/config/local/ignition/gateway-network/uuid.txt
+            # Bind mount for metro-keystore file
+            - /home/jonqnash/Ignition/IgnBe_metro-keystore.pfx:/usr/local/bin/ignition/data/config/local/ignition/gateway-network/keystore/metro-keystore.pfx
         networks:
             - IgnFeNet
             - IgnBeNet
@@ -36,6 +53,8 @@ services:
         command: >
             -n IgnBeGateway
             -m 2048
+            -r /restore.gwbk
+    # MariaDb database
     MariaDbCont:
         image: mariadb:12.2.2
         container_name: MariaDbCont
@@ -51,6 +70,16 @@ services:
             - MARIADB_DATABASE=IgnData
             - MARIADB_USER=acsiuser
             - MARIADB_PASSWORD=@csiToledo1
+    # MailCatcher SMTP mail server
+    MailCont:
+        image: dockage/mailcatcher:0.9
+        container_name: MailCont
+        hostname: MailHost
+        ports:
+            - 1080:1080
+            - 1025:1025
+        networks:
+            - IgnBeNet
 volumes:
     IgnFeVol:
         name: IgnFeVol
