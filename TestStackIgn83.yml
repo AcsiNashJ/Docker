@@ -1,3 +1,4 @@
+# You can give the stack a name but it wont use the capitalization.  grrfuck
 name: TestStackIgn83
 services:
     IgnFeCont:
@@ -35,14 +36,32 @@ services:
         command: >
             -n IgnBeGateway
             -m 2048
+    MariaDbCont:
+        image: mariadb:12.2.2
+        container_name: MariaDbCont
+        hostname: MariaDbHost
+        ports:
+            - 3306:3306
+        volumes:
+            - MariaDbVol:/var/lib/mysql
+        networks:
+            - IgnBeNet
+        environment:
+            - MARIADB_ROOT_PASSWORD=@csiToledo1
+            - MARIADB_DATABASE=IgnData
+            - MARIADB_USER=acsiuser
+            - MARIADB_PASSWORD=@csiToledo1
 volumes:
     IgnFeVol:
         name: IgnFeVol
     IgnBeVol:
         name: IgnBeVol
+    MariaDbVol:
+        name: MariaDbVol
 networks:
     IgnFeNet:
         driver: bridge
         name: IgnFeNet
     IgnBeNet:
+        driver: bridge
         name: IgnBeNet
