@@ -1,0 +1,68 @@
+# You can give the stack a name but it wont use the capitalization.  grrfuck
+name: IgnGitTest
+services:
+    # Container used to seed the bind mount with Ignition /data files 
+    IgnInitCont:
+        image: inductiveautomation/ignition:8.3
+        container_name: IgnInitCont
+        entrypoint: sh -c
+        volumes:
+        # We mount this in the container as `/data` to not conflict with built-in files
+        # at `/usr/local/bin/ignition/data`
+        - /home/jonqnash/Ignition/IgnBeData:/data
+        command:
+        # Seed the files from the image to our /data if marker file not present, skip
+        # if the marker file exists (and implicitly exit cleanly with status code 0)
+        - |
+            if [ ! -f /data/.ignition-seed-complete ]; then
+            touch /data/.ignition-seed-complete ;
+            cp -dpR /usr/local/bin/ignition/data/* /data/ ;
+            fi
+    
+    # Ignition BE gateway
+    IgnBeCont:
+        image: inductiveautomation/ignition:8.3
+        container_name: IgnBeCont
+        hostname: IgnBeHost
+        ports:
+            - 8088:8088
+        volumes:
+            # Bind mount for Ign data
+            #- /home/jonqnash/Ignition/BeData:/usr/local/bin/ignition/data
+            - /home/jonqnash/Ignition/IgnBeData:/usr/local/bin/ignition/data
+        networks:
+            - IgnBeNet
+        environment:
+            - IGNITION_EDITION=standard
+            - GATEWAY_ADMIN_PASSWORD=password
+            - ACCEPT_IGNITION_EULA=Y
+        # Use depends_on to only launch this container if our int container exits cleanly
+        depends_on:
+            IgnInitCont:
+                condition: service_completed_successfully
+        command: >
+            -n IgnBeGateway
+            -m 2048
+    # MariaDb database
+    MariaDbCont:
+        image: mariadb:12.2.2
+        container_name: MariaDbCont
+        hostname: MariaDbHost
+        ports:
+            - 3306:3306
+        volumes:
+            - MariaDbVol:/var/lib/mysql
+        networks:
+            - IgnBeNet
+        environment:
+            - MARIADB_ROOT_PASSWORD=@csiToledo1
+            - MARIADB_DATABASE=IgnData
+            - MARIADB_USER=acsiuser
+            - MARIADB_PASSWORD=@csiToledo1
+volumes:
+    MariaDbVol:
+        name: MariaDbVol
+networks:
+    IgnBeNet:
+        driver: bridge
+        name: IgnBeNet
